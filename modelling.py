@@ -192,21 +192,24 @@ xval_seq_tensor = torch.Tensor(xval_seq).long()
 train_loader = torch.utils.data.DataLoader(torch.utils.data.TensorDataset(xtrain_seq_tensor, ytrain_tensor), batch_size=BATCHSIZE, shuffle=True)
 
 #%%
-emb_dim = 20
+emb_dim = 50
 
 class EmbeddingModel(nn.Module):
     def __init__(self):
         super().__init__()
         self.embedding = nn.Embedding(num_embeddings=max(tok.index_word)+1, embedding_dim=emb_dim)
-        self.hidden1 = nn.Linear(in_features=emb_dim*30, out_features=256)
+        self.conv = nn.Conv1d(in_channels=1, out_channels=32, kernel_size=(2, emb_dim))
+        self.maxpool = nn.MaxPool1d(2)
+        self.hidden1 = nn.Linear(in_features=928, out_features=256)
         self.hidden2 = nn.Linear(in_features=256, out_features=48)
         self.relu = nn.ReLU()
         self.out = nn.Linear(in_features=48, out_features=3)
         self.softmax = nn.Softmax()
 
     def forward(self, x):
-        embds = self.embedding(x).view((-1, emb_dim*30))
-        x = self.relu(self.hidden1(embds))
+        embds = self.embedding(x).view((-1, 1, 30, emb_dim))
+        conv = self.conv(embds).flatten(1)
+        x = self.relu(self.hidden1(conv))
         x = self.relu(self.hidden2(x))
         out = self.softmax(self.out(x))
         return out
@@ -225,7 +228,7 @@ lrf.reset()
 #%%
 # TODO: Performance!!
 torch.set_num_threads(2)
-embscheduler = torch.optim.lr_scheduler.CyclicLR(emboptim, base_lr=10**-3, max_lr=10**-2, step_size_up=len(xtrain)//BATCHSIZE*2, cycle_momentum=False)
+embscheduler = torch.optim.lr_scheduler.CyclicLR(emboptim, base_lr=10**-4, max_lr=10**-2, mode='exp_range', step_size_up=len(xtrain)//BATCHSIZE*0.5*len(xtrain), cycle_momentum=False)
 N_EPOCHS = 10
 
 history = {'train': [], 'val': []}
