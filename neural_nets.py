@@ -69,7 +69,7 @@ def init_weights(m):
 
 net.apply(init_weights)
 criterion = nn.CrossEntropyLoss()
-optim = torch.optim.Adam(net.parameters())
+optim = torch.optim.Adam(net.parameters(), lr=10**-2)
 
 #%%
 from torch_lr_finder import LRFinder
@@ -79,13 +79,16 @@ lrf.plot()
 lrf.reset()
 
 #%%
+import time
 # SUPER SLOW...
 torch.set_num_threads(4)
 scheduler = torch.optim.lr_scheduler.CyclicLR(optim, base_lr=10**-3, max_lr=10**-1.9, cycle_momentum=False)
 N_EPOCHS = 10
 
 history = {'train': [], 'val': []}
+tic = time.time()
 for epoch in range(N_EPOCHS):
+    net.train()
     for x, y in train_loader:
         yhat = net(x)
         loss = criterion(yhat, y)
@@ -95,7 +98,9 @@ for epoch in range(N_EPOCHS):
         optim.step()
         scheduler.step()
     
+    net.eval()
     with torch.no_grad():
+        
         train_loss = criterion(net(xtrain_cv_tensor), ytrain_tensor)
 
         val_loss = criterion(net(xval_cv_tensor), yval_tensor)
@@ -105,8 +110,9 @@ for epoch in range(N_EPOCHS):
         history['val'].append(val_loss.item())
 
         print(f"Epoch #{epoch:3}: trainloss = {train_loss:.4f} & valloss = {val_loss:.4f} & val_acc = {val_acc:.3f}")
-
+tac = time.time()
 pd.DataFrame(history).plot()
+print(f"Training took {tac - tic:.1f} seconds")
 
 #%%
 print('\n' + classification_report(yval, torch.argmax(net(xval_cv_tensor), axis=1)))
