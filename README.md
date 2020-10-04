@@ -11,7 +11,9 @@ Although the size of the dataset seems suitable, the classes are unbalanced:
 - `simple_modelling.py` contains Naive Bayes, Logistic Regression, Linear SVC and Random Forest on BOW representation of the data (which did work better than TF-IDF)
 
 ## Findings
-(performance on unused test data)
+- performance on unused test data
+- 0 = hate speech, 1 = offensive language, 2 = neither
+
 ### Logistic Regression
 - Best performing model
 
@@ -35,6 +37,7 @@ Input -> 5 -> Output
 
 #### Embedding Net
 - TODO
+    - Caution: self-learned embeddings might adapt racial biases as pointed out in Sap et al. (2019)
 
 ## Concerns
 - Unfortunately, the annotation instructions are not available so we do not know the exact definitions of the class labels
@@ -42,4 +45,5 @@ Input -> 5 -> Output
     - Rephrasing the problem might be necessary, e.g. hate speech VS rest prediction rather than discriminating between hate speech and offensive language
 
 ## Literature
-Davidson, T., Warmsley, D., Macy, M., & Weber, I. (2017). Automated hate speech detection and the problem of offensive language. arXiv preprint arXiv:1703.04009.
+- Davidson, T., Warmsley, D., Macy, M., & Weber, I. (2017). Automated hate speech detection and the problem of offensive language. arXiv preprint arXiv:1703.04009.
+- Sap, M., Card, D., Gabriel, S., Choi, Y., & Smith, N. A. (2019, July). The risk of racial bias in hate speech detection. In Proceedings of the 57th Annual Meeting of the Association for Computational Linguistics (pp. 1668-1678).
